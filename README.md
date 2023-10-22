@@ -7,6 +7,8 @@ The contents of each file is private however a sizeable amount of metadata is le
 
 ## Presentation and Demonstration
 
+_(Click the image to watch on YouTube)_
+
 [![Watch the video](https://img.youtube.com/vi/-xAY_4wRgxg/hqdefault.jpg)](https://www.youtube.com/embed/-xAY_4wRgxg)
 
 ## Configuring
