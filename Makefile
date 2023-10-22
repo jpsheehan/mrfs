@@ -17,7 +17,7 @@ format:
 	astyle -n -A3 -t4 *.c *.h
 
 mount:
-	valgrind ./mrfs ./foo 1902 12 21 18 30 215
+	./mrfs ./foo 1902 12 21 18 30 215
 
 unmount:
 	fusermount -u ./foo
