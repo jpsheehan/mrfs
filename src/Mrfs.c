@@ -160,11 +160,11 @@ int MrfsDirectoryWrite(directory_t *d, mrbs_credentials_t *credentials,
   offset = message + strlen(message);
   for (int i = 0; i < d->num_files; ++i) {
     file_ref_t *fref = &d->file_refs[i];
-    snprintf(offset, MRFS_BYTES_PER_CHUNK - (offset - message),
+    size_t chars_written = snprintf(offset, MRFS_BYTES_PER_CHUNK - (offset - message),
              "MRFSI-%04d-%02d-%02d-%02d-%02d-%04d,%s\n", fref->id.year,
              fref->id.month, fref->id.day, fref->id.hour, fref->id.min,
              fref->id.room, fref->name);
-    offset += 26 + 1 + strlen(fref->name) + 1;
+    offset += chars_written;
   }
 
   // encode the description
