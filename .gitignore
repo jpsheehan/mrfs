@@ -1,0 +1,5 @@
+**/*.o
+#src/.env.h
+/main
+/mrfs
+/*Test
