@@ -7,7 +7,7 @@ The contents of each file is private however a sizeable amount of metadata is le
 
 ## Presentation and Demonstration
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/-xAY_4wRgxg?si=PgiONGXKmMQzxhGo" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+[![Watch the video](https://img.youtube.com/vi/-xAY_4wRgxg/hqdefault.jpg)](https://www.youtube.com/embed/-xAY_4wRgxg)
 
 ## Configuring
 
