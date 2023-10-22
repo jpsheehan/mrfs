@@ -10,7 +10,7 @@
 #include "utils.h"
 
 #define MRBS_URL_BUFFER_SIZE 2800
-#define MRBS_URL_ROOT "http://library.canterbury.ac.nz/webapps/mrbs/"
+#define MRBS_URL_ROOT "https://library.canterbury.ac.nz/webapps/mrbs/"
 
 const int ROOM_LOOKUP[] = {
     215, // ROOM 212A
@@ -325,7 +325,7 @@ int _MrbsBookingGetId(mrbs_booking_t *booking) {
     return -1;
   }
   // INFO("here");
-  // printf("URL: %s\n", url);
+  printf("URL: %s\n", url);
 
   result = HttpRequestCreate(&req, url, HTTP_METHOD_GET);
   if (result != 0) {
@@ -353,6 +353,8 @@ int _MrbsBookingGetId(mrbs_booking_t *booking) {
            booking->time.minute);
 
   char *row_start = NULL;
+
+  printf("BODY HAS %d chars: %s\n\n\n\n", strlen(res.body), res.body);
 
   row_start = strstr(res.body, needle);
   if (row_start == NULL) {

@@ -55,7 +55,7 @@ int HttpParseUrl(const char *url, http_request_t *req) {
   regmatch_t m[4] = {0};
   size_t len = 0;
 
-  if ((regcomp(&r, "^http://([[:alnum:].]+)(:[[:digit:]]+)?(.*)$",
+  if ((regcomp(&r, "^https://([[:alnum:].]+)(:[[:digit:]]+)?(.*)$",
                REG_EXTENDED) != 0)) {
     ERR("could not compile regex");
     regfree(&r);

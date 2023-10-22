@@ -156,7 +156,7 @@ int MrfsDirectoryWrite(directory_t *d, mrbs_credentials_t *credentials,
 
   char *message = calloc(MRFS_BYTES_PER_CHUNK, sizeof(char));
   char *offset = message;
-  snprintf(offset, MRFS_DESC_LEN, "%d\n", d->num_files);
+  snprintf(offset, MRFS_BYTES_PER_CHUNK, "%d\n", d->num_files);
   offset = message + strlen(message);
   for (int i = 0; i < d->num_files; ++i) {
     file_ref_t *fref = &d->file_refs[i];

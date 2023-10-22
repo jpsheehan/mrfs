@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 	if (argc == 2) {
 		url = argv[1];
 	} else {
-		url = "http://library.canterbury.ac.nz/webapps/mrbs/day.php";
+		url = "https://library.canterbury.ac.nz/webapps/mrbs/day.php";
 	}
 
 	status = HttpRequestCreate(req, url, HTTP_METHOD_GET);
