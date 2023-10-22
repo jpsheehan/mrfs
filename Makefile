@@ -1,12 +1,12 @@
 CC=gcc
 CFLAGS=-Wall -g -Og --std=gnu18
 
-all: main mrfs test
+all: mrfs test
 
-test: MrbsBookingTest MrbsTest MrfsTest HttpTest Base64Test Base64FileTest HttpFileTest MrfsDirectoryTest
+test: MrbsBookingTest MrbsTest MrfsTest Base64Test Base64FileTest MrfsDirectoryTest
 
 clean:
-	rm -f *.o ./main ./HttpTest ./MrfsDirectoryTest ./MrbsTest ./Base64Test ./MrfsTest ./Base64FileTest ./HttpFileTest ./vgcore.* ./mrfs ./MrbsBookingTest
+	rm -f *.o ./main ./MrfsDirectoryTest ./MrbsTest ./Base64Test ./MrfsTest ./Base64FileTest ./vgcore.* ./mrfs ./MrbsBookingTest
 	fusermount -u foo
 
 rebuild:
@@ -17,7 +17,7 @@ format:
 	astyle -n -A3 -t4 *.c *.h
 
 mount:
-	./mrfs ./foo 1902 12 14 15 30 215
+	valgrind ./mrfs ./foo 1902 12 15 18 30 215
 
 unmount:
 	fusermount -u ./foo
@@ -25,29 +25,23 @@ unmount:
 #################################################
 ## OUTPUT FILES
 
-main: src/main.c Http.o Mrbs.o Mrfs.o Base64.o KeyValueList.o LinkedList.o
-	$(CC) $(CFLAGS) $^ -o $@
-
-mrfs: src/MrfsFuse.c LinkedList.o KeyValueList.o Base64.o Http.o Mrbs.o Mrfs.o
-	$(CC) $(CFLAGS) `pkg-config fuse --libs --cflags` $^ -o $@
+mrfs: src/MrfsFuse.c LinkedList.o KeyValueList.o Base64.o Mrbs.o Http.o Mrfs.o
+	$(CC) $(CFLAGS) `pkg-config fuse --cflags` `curl-config --cflags` $^ -o $@ `curl-config --libs` `pkg-config fuse --libs`
 
 #################################################
 ## TEST FILES
 
-HttpTest: src/HttpTest.c LinkedList.o KeyValueList.o Base64.o Http.o
-	$(CC) $(CFLAGS) $^ -o $@
+MrfsDirectoryTest: src/MrfsDirectoryTest.c Mrfs.o Base64.o Mrbs.o KeyValueList.o LinkedList.o Http.o
+	$(CC) $(CFLAGS) `curl-config --cflags` $^ -o $@ `curl-config --libs`
 
-MrfsDirectoryTest: src/MrfsDirectoryTest.c Mrfs.o Base64.o Mrbs.o Http.o KeyValueList.o LinkedList.o
-	$(CC) $(CFLAGS) $^ -o $@
+MrfsTest: src/MrfsTest.c Mrfs.o Base64.o Mrbs.o KeyValueList.o LinkedList.o Http.o
+	$(CC) $(CFLAGS) `pkg-config fuse --libs --cflags` `curl-config --cflags` $^ -o $@ `curl-config --libs`
 
-MrfsTest: src/MrfsTest.c Mrfs.o Base64.o Mrbs.o Http.o KeyValueList.o LinkedList.o
-	$(CC) $(CFLAGS) `pkg-config fuse --libs --cflags` $^ -o $@
+MrbsTest: src/MrbsTest.c LinkedList.o KeyValueList.o Base64.o Mrbs.o Http.o
+	$(CC) $(CFLAGS) `curl-config --cflags` $^ -o $@ `curl-config --libs`
 
-MrbsTest: src/MrbsTest.c LinkedList.o KeyValueList.o Base64.o Http.o Mrbs.o
-	$(CC) $(CFLAGS) $^ -o $@
-
-MrbsBookingTest: src/MrbsBookingTest.c LinkedList.o KeyValueList.o Base64.o Http.o Mrbs.o Mrfs.o
-	$(CC) $(CFLAGS) $^ -o $@
+MrbsBookingTest: src/MrbsBookingTest.c LinkedList.o KeyValueList.o Base64.o Mrbs.o Mrfs.o Http.o
+	$(CC) $(CFLAGS) `curl-config --cflags` $^ -o $@ `curl-config --libs`
 
 Base64FileTest: src/Base64FileTest.c Base64.o
 	$(CC) $(CFLAGS) $^ -o $@

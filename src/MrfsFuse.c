@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <fuse/fuse.h>
+#include <curl/curl.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <time.h>
@@ -144,6 +145,8 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
+  curl_global_init(CURL_GLOBAL_DEFAULT);
+
   const char *mountpoint = argv[1];
 
   nid.year = atoi(argv[2]);
@@ -155,6 +158,7 @@ int main(int argc, char *argv[]) {
 
   if (nid.room == STATUS_ERR) {
     printf("Invalid room id :(\n");
+    curl_global_cleanup();
     return EXIT_FAILURE;
   }
 
@@ -202,6 +206,7 @@ int main(int argc, char *argv[]) {
     } else {
       printf(" Not created!\n");
       printf("Check that there is not an existing booking at the location!\n");
+      curl_global_cleanup();
       return EXIT_FAILURE;
     }
   }
@@ -212,9 +217,11 @@ int main(int argc, char *argv[]) {
   (void)fuse_argc;
   (void)fuse_argv;
 
-  return fuse_main(fuse_argc, fuse_argv, &ops, NULL);
+  int fuse_result = fuse_main(fuse_argc, fuse_argv, &ops, NULL);
 
-  return 0;
+  curl_global_cleanup();
+
+  return fuse_result;
 }
 
 void print_usage(const char *exe) {

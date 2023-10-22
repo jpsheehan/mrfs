@@ -53,9 +53,9 @@ int main()
 	// maybe delete the booking if the user wants to
 	char r = 'n';
 	printf("Do you want to delete the booking? (y/n)\n");
-	scanf("%c", &r);
+	size_t n = scanf("%c", &r);
 
-	if (r == 'y')
+	if (n > 0 && r == 'y')
 	{
 		printf("\nDeleting booking\n");
 	

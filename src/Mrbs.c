@@ -51,13 +51,13 @@ int MrbsBookingCreate(mrbs_booking_t *booking,
 }
 
 int MrbsBookingSend(mrbs_booking_t *booking) {
-  http_request_t req = {0};
+  http_request_t *req = NULL;
   http_response_t res = {0};
   char *url = NULL;
   int status;
 
   url = _MrbsBookingGetUrl(booking, MRBS_URL_NEW);
-  if (HttpRequestCreate(&req, url, HTTP_METHOD_GET) != 0) {
+  if (HttpRequestCreate(&req, url, HTTP_METHOD_GET, &res) != 0) {
     free(url);
     ERR("Could not create the request.");
     return STATUS_ERR;
@@ -65,43 +65,46 @@ int MrbsBookingSend(mrbs_booking_t *booking) {
 
   // printf("URL = %s\n", url);
 
-  HttpRequestAddBasicAuth(&req, booking->credentials->username,
+  HttpRequestAddBasicAuth(req, booking->credentials->username,
                           booking->credentials->password);
 
-  if (HttpRequestSend(&req, &res) != 0) {
+  if (HttpRequestSend(req) != 0) {
     free(url);
-    HttpRequestDestroy(&req);
+    HttpRequestDestroy(req);
     ERR("Could not send the request");
     return STATUS_ERR;
   }
 
-  switch (res.status_code) {
+  int status_code;
+  curl_easy_getinfo(req, CURLINFO_RESPONSE_CODE, &status_code);
+
+  switch (status_code) {
   case 302:
     status = STATUS_OK;
     break;
   case 200:
     ERR("Received failed status code (200)");
     FILE *f = fopen("dump.html", "w");
-    fprintf(f, "%s", res.body);
+    fprintf(f, "%s", res.data);
     fclose(f);
     status = STATUS_ERR;
     break;
   default:
     ERR("Received unexpected status code :(");
-    printf("Status: %d, %s\n", res.status_code, res.status_str);
+    printf("Status: %d\n", status_code);
     status = STATUS_ERR;
     break;
   }
 
   HttpResponseDestroy(&res);
-  HttpRequestDestroy(&req);
+  HttpRequestDestroy(req);
   free(url);
 
   return status;
 }
 
 int MrbsBookingDelete(mrbs_booking_t *booking) {
-  http_request_t req = {0};
+  http_request_t *req = NULL;
   http_response_t res = {0};
   char *url;
   int result = -1;
@@ -114,22 +117,25 @@ int MrbsBookingDelete(mrbs_booking_t *booking) {
       return -1;
     }
 
-    result = HttpRequestCreate(&req, url, HTTP_METHOD_GET);
+    result = HttpRequestCreate(&req, url, HTTP_METHOD_GET, &res);
     if (result != 0) {
       free(url);
       return -1;
     }
 
-    HttpRequestAddBasicAuth(&req, booking->credentials->username,
+    HttpRequestAddBasicAuth(req, booking->credentials->username,
                             booking->credentials->password);
-    result = HttpRequestSend(&req, &res);
+    result = HttpRequestSend(req);
     if (result != 0) {
       free(url);
-      HttpRequestDestroy(&req);
+      HttpRequestDestroy(req);
       return -1;
     }
 
-    if (res.status_code == 302) {
+    long status_code;
+    curl_easy_getinfo(req, CURLINFO_RESPONSE_CODE, &status_code);
+
+    if (status_code == 302) {
       result = 0;
       booking->_id = 0;
     } else {
@@ -137,7 +143,7 @@ int MrbsBookingDelete(mrbs_booking_t *booking) {
     }
 
     free(url);
-    HttpRequestDestroy(&req);
+    HttpRequestDestroy(req);
     HttpResponseDestroy(&res);
   }
 
@@ -309,7 +315,7 @@ char *_MrbsBookingGetUrl(mrbs_booking_t *booking, mrbs_url_t type) {
 
 // returns the id of the booking, making a request to the server if required.
 int _MrbsBookingGetId(mrbs_booking_t *booking) {
-  http_request_t req = {0};
+  http_request_t *req = NULL;
   http_response_t res = {0};
   char *url = NULL;
   int result = 0;
@@ -327,16 +333,17 @@ int _MrbsBookingGetId(mrbs_booking_t *booking) {
   // INFO("here");
   printf("URL: %s\n", url);
 
-  result = HttpRequestCreate(&req, url, HTTP_METHOD_GET);
+  result = HttpRequestCreate(&req, url, HTTP_METHOD_GET, &res);
   if (result != 0) {
-    HttpRequestDestroy(&req);
+    HttpRequestDestroy(req);
     free(url);
     return -1;
   }
 
-  result = HttpRequestSend(&req, &res);
-  if (result != 0) {
-    HttpRequestDestroy(&req);
+  result = HttpRequestSend(req);
+  // printf("Response was:\n\n%s\n\n\n\n", res.data);
+  if (result != STATUS_OK) {
+    HttpRequestDestroy(req);
     HttpResponseDestroy(&res);
     free(url);
     fprintf(stderr, "Error sending :(\n");
@@ -344,7 +351,7 @@ int _MrbsBookingGetId(mrbs_booking_t *booking) {
   }
 
   // we don't need the request or the url anymore
-  HttpRequestDestroy(&req);
+  HttpRequestDestroy(req);
   free(url);
   url = NULL;
 
@@ -354,9 +361,9 @@ int _MrbsBookingGetId(mrbs_booking_t *booking) {
 
   char *row_start = NULL;
 
-  printf("BODY HAS %d chars: %s\n\n\n\n", strlen(res.body), res.body);
+  // printf("BODY HAS %ld chars: %s\n\n\n\n", strlen(res.body), res.body);
 
-  row_start = strstr(res.body, needle);
+  row_start = strstr(res.data, needle);
   if (row_start == NULL) {
     fprintf(stderr, "Could not find row start\n");
     HttpResponseDestroy(&res);
@@ -498,19 +505,19 @@ int MrbsBookingGet(mrbs_booking_t *booking,
   char *url = _MrbsBookingGetUrl(booking, MRBS_URL_SHOW);
 
   http_response_t res = {0};
-  http_request_t req = {0};
+  http_request_t *req = NULL;
 
-  if (HttpRequestCreate(&req, url, HTTP_METHOD_GET) != 0) {
-    HttpRequestDestroy(&req);
+  if (HttpRequestCreate(&req, url, HTTP_METHOD_GET, &res) != 0) {
+    HttpRequestDestroy(req);
     fprintf(stderr, "Could not create http request.\n");
     return -1;
   }
   // printf("URL: %s\n", url);
 
-  HttpRequestAddBasicAuth(&req, credentials->username, credentials->password);
+  HttpRequestAddBasicAuth(req, credentials->username, credentials->password);
 
-  if (HttpRequestSend(&req, &res) != 0) {
-    HttpRequestDestroy(&req);
+  if (HttpRequestSend(req) != 0) {
+    HttpRequestDestroy(req);
     HttpResponseDestroy(&res);
     free(url);
     fprintf(stderr, "Could not send http request.\n");
@@ -522,32 +529,32 @@ int MrbsBookingGet(mrbs_booking_t *booking,
   url = NULL;
 
   // Check that the ID was valid
-  if (strstr(res.body, "Invalid entry id.") != NULL) {
-    HttpRequestDestroy(&req);
+  if (strstr(res.data, "Invalid entry id.") != NULL) {
+    HttpRequestDestroy(req);
     HttpResponseDestroy(&res);
     fprintf(stderr, "Invalid entry id. id = %d\n", booking->_id);
     return -1;
   }
 
   // we have a response. populate the name field of the booking
-  booking->name = _MrbsGetName(res.body);
+  booking->name = _MrbsGetName(res.data);
 
   if (booking->name == NULL) {
-    HttpRequestDestroy(&req);
+    HttpRequestDestroy(req);
     HttpResponseDestroy(&res);
     fprintf(stderr, "Could not get the name of booking.\n");
     return -1;
   }
 
-  booking->description = _MrbsGetDescription(res.body);
+  booking->description = _MrbsGetDescription(res.data);
   if (booking->description == NULL) {
-    HttpRequestDestroy(&req);
+    HttpRequestDestroy(req);
     HttpResponseDestroy(&res);
     fprintf(stderr, "Could not get the description of booking.\n");
     return -1;
   }
 
-  HttpRequestDestroy(&req);
+  HttpRequestDestroy(req);
   HttpResponseDestroy(&res);
   return 0;
 }
