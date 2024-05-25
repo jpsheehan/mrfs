@@ -1,5 +1,7 @@
 # The Meeting Room Filesystem (MRFS)
 
+_UPDATE: Sadly, or perhaps, happily, I have noticed that sometime during the first half of 2024, the University of Canterbury decided to retire the use of the MRBS software for room bookings. They now use a cloud-based service called [TimeEdit](https://timeedit.net/) instead. Therefore, this repository will no longer work correctly and will be archived._
+
 This is a project that I worked on during the final year of my Computer Engineering degree for COSC475 (Independent Course of Study; Advanced Operating Systems) at the [University of Canterbury](https://www.canterbury.ac.nz/).
 It is a [Fuse filesystem](https://www.kernel.org/doc/html/next/filesystems/fuse.html) that uses the university's [library room booking system](https://library.canterbury.ac.nz/webapps/mrbs/week.php) to store its data.
 
